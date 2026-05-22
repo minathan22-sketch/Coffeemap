@@ -1,185 +1,253 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brew Map</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<title>WA BREW — Japan's Hidden Coffee Roasters</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0f0a06;font-family:Georgia,serif;color:#f0e6d3;max-width:430px;margin:0 auto;min-height:100vh}
-button{cursor:pointer;font-family:inherit}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-@keyframes stampPop{0%{opacity:0;transform:translate(-50%,-50%) scale(0.5)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
-.stamp-anim{position:fixed;top:50%;left:50%;font-size:60px;z-index:100;animation:stampPop 0.8s ease forwards;pointer-events:none}
+:root{--ink:#1a1208;--paper:#faf7f2;--washi:#f0ead8;--sakura:#d4748a;--gold:#9a7220;--mist:#8a7a68;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--paper);font-family:'Cormorant Garamond','Noto Serif JP',serif;color:var(--ink);min-height:100vh;overflow-x:hidden;}
+.bg-fuji{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:600px;opacity:0.05;pointer-events:none;z-index:0;}
+.petals{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.petal{position:absolute;width:7px;height:9px;background:var(--sakura);border-radius:50% 0 50% 0;opacity:0;animation:fall linear infinite;}
+@keyframes fall{0%{opacity:0;transform:translateY(-20px) rotate(0deg)}10%{opacity:0.5}90%{opacity:0.2}100%{opacity:0;transform:translateY(100vh) rotate(360deg) translateX(30px)}}
+.header{position:relative;z-index:10;padding:28px 24px 16px;border-bottom:1px solid var(--mist);background:rgba(245,240,232,0.97);}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.logo-jp{font-family:'Noto Serif JP',serif;font-size:10px;font-weight:300;letter-spacing:6px;color:var(--gold);margin-bottom:2px;}
+.logo-en{font-size:30px;font-weight:600;letter-spacing:3px;line-height:1;}
+.logo-sub{font-size:10px;font-weight:300;letter-spacing:2px;color:#6b5a48;margin-top:3px;font-style:italic;}
+.badge{background:var(--ink);border-radius:10px;padding:10px 14px;text-align:center;}
+.badge-icon{font-size:18px;}
+.badge-count{font-size:10px;color:var(--gold);letter-spacing:1px;margin-top:2px;}
+.prog-wrap{margin-top:10px;}
+.prog-labels{display:flex;justify-content:space-between;font-size:10px;color:#6b5a48;letter-spacing:1px;margin-bottom:5px;}
+.prog-bar{background:var(--washi);border-radius:99px;height:3px;overflow:hidden;border:1px solid var(--mist);}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--sakura),var(--gold));border-radius:99px;transition:width 0.6s ease;}
+.pref-scroll{display:flex;gap:6px;overflow-x:auto;padding:10px 20px;border-bottom:1px solid var(--mist);background:var(--paper);scrollbar-width:none;position:relative;z-index:10;}
+.pref-scroll::-webkit-scrollbar{display:none;}
+.pref-btn{flex-shrink:0;padding:5px 13px;border-radius:2px;font-size:10px;letter-spacing:2px;border:1px solid #9a8878;background:transparent;color:#6b5a48;cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all 0.2s;text-transform:uppercase;white-space:nowrap;}
+.pref-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.tabs{display:flex;border-bottom:1px solid #c0b0a0;background:var(--paper);position:relative;z-index:10;}
+.tab-btn{flex:1;padding:13px 0;background:none;border:none;border-bottom:2px solid transparent;font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:2px;color:#7a6a58;cursor:pointer;transition:all 0.3s;text-transform:uppercase;}
+.tab-btn.active{border-bottom-color:var(--gold);color:var(--ink);}
+.content{position:relative;z-index:1;padding:16px 20px 80px;}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.fbtn{padding:4px 12px;border-radius:99px;font-size:9px;letter-spacing:1.5px;border:1px solid #9a8878;background:transparent;color:#6b5a48;cursor:pointer;font-family:'Cormorant Garamond',serif;transition:all 0.2s;text-transform:uppercase;}
+.fbtn.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.count-lbl{font-size:10px;letter-spacing:2px;color:#6b5a48;margin-bottom:12px;text-transform:uppercase;}
+.card{background:var(--washi);border:1px solid var(--mist);border-radius:4px;padding:14px 16px;display:flex;gap:12px;margin-bottom:8px;position:relative;overflow:hidden;animation:fu 0.3s ease both;transition:border-color 0.3s;}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mist);transition:background 0.3s;}
+.card.stamped::before{background:var(--gold);}
+.card.stamped{border-color:rgba(184,146,42,0.3);}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.cicon{width:44px;height:44px;border-radius:4px;background:var(--paper);border:1px solid var(--mist);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;transition:all 0.3s;}
+.card.stamped .cicon{background:rgba(184,146,42,0.1);border-color:rgba(184,146,42,0.4);}
+.cinfo{flex:1;min-width:0;}
+.cjp{font-family:'Noto Serif JP',serif;font-size:9px;font-weight:300;color:var(--gold);letter-spacing:2px;margin-bottom:2px;}
+.cname{font-size:14px;font-weight:600;letter-spacing:0.5px;margin-bottom:2px;line-height:1.2;}
+.cpref{display:inline-block;font-size:8px;letter-spacing:2px;padding:1px 6px;border:1px solid #9a8878;border-radius:2px;color:#6b5a48;text-transform:uppercase;margin-bottom:4px;}
+.cdesc{font-size:11px;color:#4a3828;line-height:1.5;margin-bottom:6px;font-style:italic;}
+.ctags{display:flex;flex-wrap:wrap;gap:4px;}
+.ctag{font-size:8px;padding:2px 7px;border-radius:2px;background:var(--paper);border:1px solid #9a8878;color:#4a3828;text-transform:uppercase;letter-spacing:0.5px;}
+.ctag.dog{background:rgba(212,116,138,0.15);border-color:var(--sakura);color:#8a3a4a;}
+.sbtn{background:transparent;border:1px solid #9a8878;border-radius:4px;padding:5px 8px;font-family:'Cormorant Garamond',serif;font-size:9px;letter-spacing:1px;color:#6b5a48;cursor:pointer;flex-shrink:0;align-self:center;transition:all 0.2s;text-transform:uppercase;}
+.sbtn.stamped{background:rgba(154,114,32,0.12);border-color:var(--gold);color:var(--gold);}
+.milestones{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.mcard{background:var(--washi);border:1px solid var(--mist);border-radius:4px;padding:14px 10px;text-align:center;opacity:0.4;transition:all 0.3s;}
+.mcard.achieved{opacity:1;border-color:rgba(184,146,42,0.4);background:rgba(184,146,42,0.05);}
+.micon{font-size:24px;margin-bottom:5px;}
+.mlabel{font-size:11px;letter-spacing:1px;font-weight:600;}
+.mjp{font-family:'Noto Serif JP',serif;font-size:8px;color:var(--gold);margin-top:2px;}
+.mcount{font-size:9px;color:#6b5a48;letter-spacing:1px;margin-top:2px;text-transform:uppercase;}
+.sgrid{background:var(--washi);border:1px solid var(--mist);border-radius:4px;padding:14px;display:grid;gap:8px;}
+.scell{aspect-ratio:1;background:var(--paper);border:1px solid var(--mist);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;transition:all 0.3s;}
+.scell.stamped{background:rgba(184,146,42,0.08);border-color:rgba(184,146,42,0.4);}
+.sicon{font-size:16px;margin-bottom:3px;filter:grayscale(1) opacity(0.3);transition:filter 0.3s;}
+.scell.stamped .sicon{filter:none;}
+.sname{font-size:7px;color:#6b5a48;text-align:center;line-height:1.2;}
+.scell.stamped .sname{color:var(--gold);}
+.stamp-anim{position:fixed;top:50%;left:50%;font-size:52px;z-index:100;pointer-events:none;animation:sp 0.7s ease forwards;}
+@keyframes sp{0%{opacity:0;transform:translate(-50%,-50%) scale(0.3) rotate(-15deg)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(5deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,18,8,0.7);z-index:200;display:flex;align-items:flex-end;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--paper);border-radius:16px 16px 0 0;padding:28px 24px 40px;width:100%;max-width:430px;margin:0 auto;animation:slideUp 0.3s ease;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-icon{font-size:44px;text-align:center;margin-bottom:8px;}
+.modal-jp{font-family:'Noto Serif JP',serif;font-size:10px;font-weight:300;color:var(--gold);letter-spacing:3px;text-align:center;margin-bottom:4px;}
+.modal-name{font-size:22px;font-weight:600;text-align:center;letter-spacing:1px;margin-bottom:4px;}
+.modal-area{font-size:11px;color:#6b5a48;text-align:center;letter-spacing:2px;margin-bottom:16px;}
+.modal-divider{height:1px;background:var(--mist);margin:14px 0;}
+.modal-hours{font-size:12px;color:#4a3828;text-align:center;font-style:italic;margin-bottom:16px;}
+.modal-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:20px;}
+.modal-links{display:flex;flex-direction:column;gap:8px;}
+.mlink{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:8px;font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:1.5px;text-decoration:none;text-transform:uppercase;transition:all 0.2s;}
+.mlink-ig{background:#1a1208;color:var(--paper);}
+.mlink-maps{background:var(--washi);color:var(--ink);border:1px solid var(--mist);}
+.mlink-stamp{background:rgba(154,114,32,0.12);color:var(--gold);border:1px solid var(--gold);cursor:pointer;border-radius:8px;padding:12px;font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;}
+.mlink-stamp.stamped{background:rgba(154,114,32,0.2);}
+.modal-close{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;color:var(--mist);cursor:pointer;}
+
+.asec{background:var(--washi);border:1px solid var(--mist);border-radius:4px;padding:18px;margin-bottom:10px;}
+.atitle{font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+.atext{font-size:13px;line-height:1.8;color:#3a2818;font-style:italic;}
+.ajp{font-family:'Noto Serif JP',serif;font-size:11px;color:#6b5a48;margin-top:8px;line-height:1.8;}
 </style>
 </head>
 <body>
+<div class="petals" id="petals"></div>
+<svg class="bg-fuji" viewBox="0 0 600 300" fill="none">
+  <path d="M300 20 L520 280 L80 280 Z" fill="#1a1208"/>
+  <path d="M300 20 L360 100 L240 100 Z" fill="white" opacity="0.8"/>
+</svg>
 <div id="root"></div>
-<script type="text/babel">
-const {useState} = React;
+<script>
+const pc=document.getElementById('petals');
+for(let i=0;i<14;i++){const p=document.createElement('div');p.className='petal';p.style.cssText=`left:${Math.random()*100}%;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*15}s`;pc.appendChild(p);}
 
-const CAFES = [
-  {id:1,name:"TRUNK COFFEE",area:"名古屋",tags:["スペシャルティ","犬OK"],stamped:false,desc:"こだわりの焙煎と空間",rating:4.8},
-  {id:2,name:"% ARABICA",area:"京都",tags:["フォトジェニック","テイクアウト"],stamped:false,desc:"世界的に有名なロースタリー",rating:4.7},
-  {id:3,name:"FUGLEN TOKYO",area:"東京",tags:["北欧系","犬OK"],stamped:false,desc:"ノルウェー発の名店",rating:4.6},
-  {id:4,name:"BLUE BOTTLE",area:"東京",tags:["スペシャルティ","テイクアウト"],stamped:false,desc:"サードウェーブの代名詞",rating:4.5},
-  {id:5,name:"猿田彦珈琲",area:"東京",tags:["和モダン","スイーツ"],stamped:false,desc:"日本の感性が光るコーヒー",rating:4.6},
-  {id:6,name:"LIGHT UP COFFEE",area:"東京",tags:["スペシャルティ","浅煎り"],stamped:false,desc:"産地にこだわる浅煎り専門",rating:4.7},
+const PREFS=['All','Tokyo','Kanagawa','Saitama','Chiba','Ibaraki','Tochigi','Gunma'];
+const TAGS_FILTER=['Specialty','Dark Roast','Light Roast','Dog Friendly','Roastery','Single Origin','Pour Over','Espresso','Traditional'];
+
+const ALL=[
+  {id:1,name:"Natsume Coffee",jp:"ナツメコーヒー",pref:"Saitama",area:"Chichibu",tags:["Dark Roast","Decaf","Dog Friendly"],desc:"Deep roasts in the mountains of Chichibu. Warm welcome for dogs and families.",icon:"🫘",hours:"Mon–Tue,Fri 11:00–16:30 / Sat–Sun 9:00–16:30",instagram:"https://www.instagram.com/natsumecoffee_chichibu",maps:"https://maps.app.goo.gl/dB1U5QipGrY4sEgL6"},
+  {id:2,name:"50 Coffee & Roastery",jp:"フィフティ コーヒー",pref:"Saitama",area:"Fukaya",tags:["Specialty","Single Origin","Roastery"],desc:"Italian-certified barista. Letting the farmer's work speak.",icon:"☕",hours:"Check Instagram",instagram:"https://www.instagram.com/50coffee_roastery",maps:"https://maps.google.com/?q=50+Coffee+Roastery+Fukaya"},
+  {id:3,name:"Taka Coffee Stand",jp:"タカ コーヒースタンド",pref:"Saitama",area:"Musashi-Urawa",tags:["Specialty","Light Roast","Pour Over"],desc:"One cup at a time, hand-poured in a second-floor sanctuary.",icon:"🍵",hours:"Check Instagram",instagram:"https://www.instagram.com/taka_coffeestand",maps:"https://maps.google.com/?q=Taka+Coffee+Stand+Musashi+Urawa"},
+  {id:4,name:"Amber Drop Coffee",jp:"アンバードロップ",pref:"Saitama",area:"Saitama City",tags:["Specialty","Roastery"],desc:"Where coffee meets patisserie. Every cup a reason to stay longer.",icon:"🌟",hours:"Check Instagram",instagram:"https://www.instagram.com/amberdrop_coffee",maps:"https://maps.google.com/?q=Amber+Drop+Coffee+Saitama"},
+  {id:5,name:"BigMouse Coffee",jp:"ビッグマウス",pref:"Saitama",area:"Saitama West",tags:["Specialty","Dog Friendly"],desc:"Old farmhouse beside a campsite. Fermented foods and rare beans.",icon:"🏡",hours:"Check Instagram",instagram:"https://www.instagram.com/bigmouse_arakawa_sashiogi",maps:"https://maps.google.com/?q=BigMouse+Coffee+Saitama"},
+  {id:6,name:"Fuglen Tokyo",jp:"フグレン トウキョウ",pref:"Tokyo",area:"Tomigaya",tags:["Specialty","Light Roast"],desc:"Oslo's legendary café transplanted to a quiet Tokyo backstreet.",icon:"🦅",hours:"Mon–Thu 8:00–22:00 / Fri–Sun 8:00–24:00",instagram:"https://www.instagram.com/fuglentokyo",maps:"https://maps.google.com/?q=Fuglen+Tokyo"},
+  {id:7,name:"Light Up Coffee",jp:"ライトアップ コーヒー",pref:"Tokyo",area:"Koenji",tags:["Specialty","Light Roast","Single Origin"],desc:"Sourcing direct from farms. Bright, transparent, honest cups.",icon:"💡",hours:"Mon–Fri 8:00–19:00 / Sat–Sun 10:00–19:00",instagram:"https://www.instagram.com/lightupcoffee",maps:"https://maps.google.com/?q=Light+Up+Coffee+Koenji"},
+  {id:8,name:"Sarutahiko Coffee",jp:"猿田彦珈琲",pref:"Tokyo",area:"Ebisu",tags:["Specialty","Espresso"],desc:"Japanese sensibility applied to third-wave coffee. A true Tokyo original.",icon:"🎌",hours:"8:00–21:00 daily",instagram:"https://www.instagram.com/sarutahiko_coffee",maps:"https://maps.google.com/?q=Sarutahiko+Coffee+Ebisu"},
+  {id:9,name:"Onibus Coffee",jp:"オニバスコーヒー",pref:"Tokyo",area:"Nakameguro",tags:["Specialty","Roastery","Single Origin"],desc:"Small-batch roasting with deep respect for the supply chain.",icon:"🚌",hours:"9:00–18:00 daily",instagram:"https://www.instagram.com/onibuscoffee",maps:"https://maps.google.com/?q=Onibus+Coffee+Nakameguro"},
+  {id:10,name:"Bear Pond Espresso",jp:"ベアポンド",pref:"Tokyo",area:"Shimokitazawa",tags:["Espresso","Specialty"],desc:"Obsessive espresso craft. Possibly the most intense shot in Tokyo.",icon:"🐻",hours:"Thu–Mon 11:00–18:00",instagram:"https://www.instagram.com/bearpond_espresso",maps:"https://maps.google.com/?q=Bear+Pond+Espresso+Shimokitazawa"},
+  {id:11,name:"Verve Coffee Roasters",jp:"ヴァーヴ コーヒー",pref:"Kanagawa",area:"Kamakura",tags:["Specialty","Single Origin"],desc:"Santa Cruz roots, Kamakura soul. Stunning views, stunning coffee.",icon:"🌊",hours:"8:00–18:00 daily",instagram:"https://www.instagram.com/vervecoffeeroasters",maps:"https://maps.google.com/?q=Verve+Coffee+Roasters+Kamakura"},
+  {id:12,name:"Good Neighbors Jamboree",jp:"グッドネイバーズ",pref:"Kanagawa",area:"Yokohama",tags:["Specialty","Dog Friendly"],desc:"Port city vibes. Good food, good coffee, good neighbors.",icon:"⚓",hours:"Check Instagram",instagram:"https://www.instagram.com/goodneighborsjamboree",maps:"https://maps.google.com/?q=Good+Neighbors+Jamboree+Yokohama"},
+  {id:13,name:"Wakakusa Coffee",jp:"若草珈琲",pref:"Kanagawa",area:"Yokohama",tags:["Traditional","Dark Roast"],desc:"Old Yokohama café culture preserved with quiet dedication.",icon:"🌿",hours:"Check maps",instagram:"",maps:"https://maps.google.com/?q=Wakakusa+Coffee+Yokohama"},
+  {id:14,name:"Leaves Coffee Roasters",jp:"リーブス コーヒー",pref:"Chiba",area:"Matsudo",tags:["Specialty","Roastery","Light Roast"],desc:"A roastery destination in the suburbs. Worth the journey.",icon:"🍃",hours:"Check Instagram",instagram:"https://www.instagram.com/leavescoffeeroasters",maps:"https://maps.google.com/?q=Leaves+Coffee+Roasters+Matsudo"},
+  {id:15,name:"Qino Coffee",jp:"キノ コーヒー",pref:"Chiba",area:"Chiba City",tags:["Specialty","Pour Over"],desc:"Precise, thoughtful pour-overs in a calm neighborhood setting.",icon:"🎋",hours:"Check maps",instagram:"",maps:"https://maps.google.com/?q=Qino+Coffee+Chiba"},
+  {id:16,name:"Revive Coffee",jp:"リバイブ コーヒー",pref:"Ibaraki",area:"Mito",tags:["Specialty","Roastery","Single Origin"],desc:"Reviving specialty coffee culture in Ibaraki, one roast at a time.",icon:"🌱",hours:"Check Instagram",instagram:"",maps:"https://maps.google.com/?q=Revive+Coffee+Mito"},
+  {id:17,name:"Shozo Coffee",jp:"ショウゾウ コーヒー",pref:"Tochigi",area:"Motegi",tags:["Roastery","Traditional"],desc:"A country café that became a pilgrimage for Japanese coffee lovers.",icon:"🏔",hours:"10:00–18:00 / Closed Wed",instagram:"https://www.instagram.com/shozo_coffee",maps:"https://maps.google.com/?q=Shozo+Coffee+Motegi"},
+  {id:18,name:"Onsen Coffee",jp:"温泉コーヒー",pref:"Gunma",area:"Kusatsu",tags:["Specialty"],desc:"Coffee after a hot spring. A uniquely Japanese combination.",icon:"♨️",hours:"Check maps",instagram:"",maps:"https://maps.google.com/?q=Onsen+Coffee+Kusatsu"},
 ];
 
-const MILESTONES=[
-  {count:1,label:"はじめの一歩",icon:"☕"},
-  {count:3,label:"コーヒー好き",icon:"🫘"},
-  {count:5,label:"カフェ通",icon:"🏆"},
-  {count:6,label:"コーヒーマスター",icon:"👑"},
-];
+let roasters=ALL.map(r=>({...r,stamped:false}));
+let tab='discover',pref='All',filter=null,anim=false,modal=null;
 
-function App(){
-  const [cafes,setCafes]=useState(CAFES);
-  const [tab,setTab]=useState("list");
-  const [anim,setAnim]=useState(false);
-  const [filterTag,setFilterTag]=useState(null);
+const sc=s=>roasters.filter(r=>r.stamped).length;
+const cm=()=>{const s=sc();return[...([{count:1,label:"First Sip",jp:"はじめの一口",icon:"🌸"},{count:5,label:"Coffee Pilgrim",jp:"コーヒー巡礼",icon:"🗻"},{count:10,label:"Roaster Sage",jp:"珈琲の賢者",icon:"🪴"},{count:18,label:"WA BREW Master",jp:"和醸マスター",icon:"👑"}])].reverse().find(m=>s>=m.count)};
+const nm=()=>{const s=sc();return[{count:1,label:"First Sip",jp:"はじめの一口",icon:"🌸"},{count:5,label:"Coffee Pilgrim",jp:"コーヒー巡礼",icon:"🗻"},{count:10,label:"Roaster Sage",jp:"珈琲の賢者",icon:"🪴"},{count:18,label:"WA BREW Master",jp:"和醸マスター",icon:"👑"}].find(m=>m.count>s)};
+const MS=[{count:1,label:"First Sip",jp:"はじめの一口",icon:"🌸"},{count:5,label:"Coffee Pilgrim",jp:"コーヒー巡礼",icon:"🗻"},{count:10,label:"Roaster Sage",jp:"珈琲の賢者",icon:"🪴"},{count:18,label:"WA BREW Master",jp:"和醸マスター",icon:"👑"}];
 
-  const stamped=cafes.filter(c=>c.stamped).length;
-  const milestone=[...MILESTONES].reverse().find(m=>stamped>=m.count);
-  const next=MILESTONES.find(m=>m.count>stamped);
-  const allTags=[...new Set(CAFES.flatMap(c=>c.tags))];
-  const filtered=filterTag?cafes.filter(c=>c.tags.includes(filterTag)):cafes;
-
-  function toggleStamp(id){
-    setCafes(p=>p.map(c=>c.id===id?{...c,stamped:!c.stamped}:c));
-    setAnim(true);setTimeout(()=>setAnim(false),800);
-  }
-
-  const S={
-    header:{padding:"28px 24px 16px",borderBottom:"1px solid #2a1f14"},
-    tabs:{display:"flex",borderBottom:"1px solid #1a1108"},
-    tab:(active)=>({flex:1,padding:"14px 0",background:"none",border:"none",
-      borderBottom:active?"2px solid #c9914a":"2px solid transparent",
-      color:active?"#c9914a":"#5a4a38",fontSize:13,letterSpacing:1}),
-    content:{padding:"16px 20px 80px"},
-    card:{background:"#120d07",border:"1px solid #1a1108",borderRadius:14,
-      padding:"14px 16px",display:"flex",alignItems:"center",gap:14,
-      marginBottom:10,animation:"fadeIn 0.3s ease"},
-    stampBtn:(s)=>({background:s?"#c9914a22":"transparent",
-      border:`1px solid ${s?"#c9914a":"#2a1f14"}`,borderRadius:99,
-      padding:"6px 12px",color:s?"#c9914a":"#3a2a18",fontSize:11,flexShrink:0}),
-    tag:{fontSize:9,padding:"2px 6px",borderRadius:99,
-      background:"#0f0a06",border:"1px solid #1a1108",color:"#5a4a38"},
-    filterBtn:(active)=>({padding:"5px 12px",borderRadius:99,fontSize:11,
-      border:`1px solid ${active?"#c9914a":"#2a1f14"}`,
-      background:active?"#2a1a08":"transparent",
-      color:active?"#c9914a":"#5a4a38",marginRight:6,marginBottom:6}),
-  };
-
-  return (
-    <div>
-      {anim&&<div className="stamp-anim">☕</div>}
-
-      <div style={S.header}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-          <div>
-            <div style={{fontSize:11,letterSpacing:4,color:"#8b6a3e",marginBottom:4}}>Coffee Discovery</div>
-            <div style={{fontSize:26,fontWeight:700}}>Brew Map</div>
-          </div>
-          <div style={{background:"#1a1108",border:"1px solid #3a2a18",borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
-            <div style={{fontSize:20}}>{milestone?.icon||"☕"}</div>
-            <div style={{fontSize:11,color:"#8b6a3e",marginTop:2}}>{stamped} スタンプ</div>
-          </div>
-        </div>
-        {next&&(
-          <div style={{marginTop:14}}>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#5a4a38",marginBottom:6}}>
-              <span>{milestone?.label||"スタート"}</span>
-              <span>次: {next.label} まであと{next.count-stamped}つ</span>
-            </div>
-            <div style={{background:"#1a1108",borderRadius:99,height:4,overflow:"hidden"}}>
-              <div style={{height:"100%",width:`${(stamped/next.count)*100}%`,background:"linear-gradient(90deg,#8b6a3e,#c9914a)",borderRadius:99,transition:"width 0.5s"}}/>
-            </div>
-          </div>
-        )}
-        {stamped>=6&&<div style={{marginTop:12,textAlign:"center",fontSize:12,color:"#c9914a"}}>👑 全スタンプ制覇！コーヒーマスター</div>}
-      </div>
-
-      <div style={S.tabs}>
-        {[["list","リスト"],["stamps","スタンプ"]].map(([k,l])=>(
-          <button key={k} onClick={()=>setTab(k)} style={S.tab(tab===k)}>{l}</button>
-        ))}
-      </div>
-
-      <div style={S.content}>
-        {tab==="list"&&(
-          <div>
-            <div style={{display:"flex",flexWrap:"wrap",marginBottom:16}}>
-              <button onClick={()=>setFilterTag(null)} style={S.filterBtn(!filterTag)}>すべて</button>
-              {allTags.map(t=>(
-                <button key={t} onClick={()=>setFilterTag(t===filterTag?null:t)} style={S.filterBtn(filterTag===t)}>{t}</button>
-              ))}
-            </div>
-            {filtered.map(cafe=>(
-              <div key={cafe.id} style={S.card}>
-                <div style={{width:44,height:44,borderRadius:12,background:cafe.stamped?"#1a1108":"#0c0804",
-                  border:`1px solid ${cafe.stamped?"#c9914a44":"#1a1108"}`,
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>
-                  {cafe.stamped?"☕":"○"}
-                </div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:14,fontWeight:700,marginBottom:2}}>{cafe.name}</div>
-                  <div style={{fontSize:11,color:"#5a4a38"}}>{cafe.area} · ★{cafe.rating}</div>
-                  <div style={{display:"flex",gap:4,marginTop:4,flexWrap:"wrap"}}>
-                    {cafe.tags.map(t=><span key={t} style={S.tag}>{t}</span>)}
-                  </div>
-                </div>
-                <button onClick={()=>toggleStamp(cafe.id)} style={S.stampBtn(cafe.stamped)}>
-                  {cafe.stamped?"✓":"＋"}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab==="stamps"&&(
-          <div>
-            <div style={{fontSize:12,color:"#5a4a38",marginBottom:12,letterSpacing:1}}>MILESTONES</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
-              {MILESTONES.map(m=>{
-                const ok=stamped>=m.count;
-                return(
-                  <div key={m.count} style={{background:ok?"#1a1108":"#0c0804",border:`1px solid ${ok?"#3a2a18":"#1a1108"}`,
-                    borderRadius:14,padding:"16px 12px",textAlign:"center",opacity:ok?1:0.4}}>
-                    <div style={{fontSize:28,marginBottom:6,filter:ok?"none":"grayscale(1)"}}>{m.icon}</div>
-                    <div style={{fontSize:12,color:ok?"#c9914a":"#3a2a18",fontWeight:700}}>{m.label}</div>
-                    <div style={{fontSize:10,color:"#3a2a18",marginTop:3}}>{m.count}店舗</div>
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{fontSize:12,color:"#5a4a38",marginBottom:12,letterSpacing:1}}>STAMP CARD</div>
-            <div style={{background:"#120d07",border:"1px solid #2a1f14",borderRadius:16,padding:16}}>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-                {cafes.map(cafe=>(
-                  <div key={cafe.id} style={{aspectRatio:"1",background:cafe.stamped?"#1a1108":"#0c0804",
-                    border:`1px solid ${cafe.stamped?"#c9914a44":"#1a1108"}`,borderRadius:12,
-                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:8}}>
-                    <div style={{fontSize:22,filter:cafe.stamped?"none":"grayscale(1) opacity(0.3)"}}>{cafe.stamped?"☕":"○"}</div>
-                    <div style={{fontSize:9,color:cafe.stamped?"#8b6a3e":"#2a1f14",marginTop:4,textAlign:"center",lineHeight:1.2}}>
-                      {cafe.name.split(" ")[0]}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+function getFiltered(){
+  let l=pref==='All'?roasters:roasters.filter(r=>r.pref===pref);
+  if(filter)l=l.filter(r=>r.tags.includes(filter));
+  return l;
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+function toggleStamp(id){
+  roasters=roasters.map(r=>r.id===id?{...r,stamped:!r.stamped}:r);
+  anim=true;
+  if(modal&&modal.id===id)modal={...modal,stamped:!modal.stamped};
+  render();setTimeout(()=>{anim=false;render();},700);
+}
+
+function openModal(id){
+  modal=roasters.find(r=>r.id===id);
+  render();
+}
+function closeModal(){modal=null;render();}
+
+function renderModal(r){
+  return `
+  <div class="modal-overlay" onclick="closeModal()">
+    <div class="modal" style="position:relative" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <div class="modal-icon">${r.icon}</div>
+      <div class="modal-jp">${r.jp}</div>
+      <div class="modal-name">${r.name}</div>
+      <div class="modal-area">${r.pref} · ${r.area}</div>
+      <div class="modal-tags">${r.tags.map(t=>`<span class="ctag ${t==='Dog Friendly'?'dog':''}">${t}</span>`).join('')}</div>
+      <div class="modal-hours">🕐 ${r.hours}</div>
+      <div class="modal-divider"></div>
+      <div class="modal-links">
+        ${r.instagram?`<a class="mlink mlink-ig" href="${r.instagram}" target="_blank">📸 Instagram</a>`:''}
+        ${r.maps?`<a class="mlink mlink-maps" href="${r.maps}" target="_blank">🗺 Google Maps</a>`:''}
+        <button class="mlink-stamp ${r.stamped?'stamped':''}" onclick="toggleStamp(${r.id})">
+          ${r.stamped?'✓ Visited! Remove stamp':'☕ Mark as Visited'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const s=sc(),m=cm(),n=nm(),filtered=getFiltered();
+  document.getElementById('root').innerHTML=`
+    ${anim?'<div class="stamp-anim">🌸</div>':''}
+    ${modal?renderModal(roasters.find(r=>r.id===modal.id)):''}
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <div class="logo-jp">和 醸 — わ じょう</div>
+          <div class="logo-en">WA BREW</div>
+          <div class="logo-sub">Japan's Hidden Coffee Roasters</div>
+        </div>
+        <div class="badge"><div class="badge-icon">${m?.icon||'🌸'}</div><div class="badge-count">${s} stamps</div></div>
+      </div>
+      ${n?`<div class="prog-wrap"><div class="prog-labels"><span>${m?.label||'Begin'}</span><span>${n.count-s} more → ${n.label}</span></div><div class="prog-bar"><div class="prog-fill" style="width:${(s/n.count)*100}%"></div></div></div>`:`<div style="text-align:center;font-size:10px;color:var(--gold);margin-top:10px;letter-spacing:2px">👑 WA BREW MASTER</div>`}
+    </div>
+
+    <div class="pref-scroll">
+      ${PREFS.map(p=>`<button class="pref-btn ${pref===p?'active':''}" onclick="setPref('${p}')">${p==='All'?'🗾 All':p}</button>`).join('')}
+    </div>
+
+    <div class="tabs">
+      ${[['discover','Discover'],['stamps','Stamps'],['about','About']].map(([k,l])=>`<button class="tab-btn ${tab===k?'active':''}" onclick="setTab('${k}')">${l}</button>`).join('')}
+    </div>
+
+    <div class="content">
+    ${tab==='discover'?`
+      <div class="filters">
+        <button class="fbtn ${!filter?'active':''}" onclick="setFilter(null)">All</button>
+        ${TAGS_FILTER.map(t=>`<button class="fbtn ${filter===t?'active':''}" onclick="setFilter('${t}')">${t}</button>`).join('')}
+      </div>
+      <div class="count-lbl">${filtered.length} roaster${filtered.length!==1?'s':''} · ${pref==='All'?'Kanto Region':pref}</div>
+      ${filtered.map((r,i)=>`
+        <div class="card ${r.stamped?'stamped':''}" style="animation-delay:${i*0.04}s;cursor:pointer" onclick="openModal(${r.id})">
+          <div class="cicon">${r.icon}</div>
+          <div class="cinfo">
+            <div class="cjp">${r.jp}</div>
+            <div class="cname">${r.name}</div>
+            <span class="cpref">${r.pref} · ${r.area}</span>
+            <div class="cdesc">${r.desc}</div>
+            <div class="ctags">${r.tags.map(t=>`<span class="ctag ${t==='Dog Friendly'?'dog':''}">${t}</span>`).join('')}</div>
+          </div>
+          <button class="sbtn ${r.stamped?'stamped':''}" onclick="event.stopPropagation();toggleStamp(${r.id})">${r.stamped?'✓':'+'}</button>
+        </div>`).join('')}
+    `:''}
+    ${tab==='stamps'?`
+      <div class="milestones">${MS.map(ms=>`<div class="mcard ${s>=ms.count?'achieved':''}"><div class="micon">${ms.icon}</div><div class="mlabel">${ms.label}</div><div class="mjp">${ms.jp}</div><div class="mcount">${ms.count} roasters</div></div>`).join('')}</div>
+      <div style="font-size:10px;letter-spacing:3px;color:var(--mist);margin-bottom:10px;text-transform:uppercase">Your Stamp Card — ${s}/${ALL.length}</div>
+      <div class="sgrid" style="grid-template-columns:repeat(6,1fr)">
+        ${roasters.map(r=>`<div class="scell ${r.stamped?'stamped':''}"><div class="sicon">${r.icon}</div><div class="sname">${r.name.split(' ')[0]}</div></div>`).join('')}
+      </div>
+      <div style="text-align:center;font-size:32px;margin:20px 0;opacity:0.15">🌸 🗻 🪴</div>
+    `:''}
+    ${tab==='about'?`
+      <div class="asec"><div class="atitle">Our Mission</div><div class="atext">Japan's most extraordinary coffee roasters hide in mountain towns, old farmhouses, quiet backstreets. We find them. We map them. We share them with the world.</div><div class="ajp">日本の隠れた珈琲文化を、世界へ。</div></div>
+      <div class="asec"><div class="atitle">Coverage — Kanto Region</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px">${['Tokyo','Kanagawa','Saitama','Chiba','Ibaraki','Tochigi','Gunma'].map(p=>`<div style="text-align:center;padding:8px 4px;background:var(--paper);border:1px solid var(--mist);border-radius:4px;font-size:9px;letter-spacing:1px">${p}<br><span style="color:var(--gold)">${ALL.filter(r=>r.pref===p).length} shops</span></div>`).join('')}</div></div>
+      <div class="asec"><div class="atitle">For Roasters</div><div class="atext">Want your roastery featured for international coffee lovers? English-language listings reaching a global audience of specialty coffee enthusiasts.</div><div style="margin-top:10px;padding:12px;background:var(--paper);border:1px solid var(--mist);border-radius:4px;text-align:center"><div style="font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:4px">CONTACT</div><div style="font-size:12px;font-style:italic">natsumecoffee_chichibu</div><div style="font-size:9px;color:var(--mist);margin-top:2px;letter-spacing:1px">Instagram · Threads</div></div></div>
+      <div class="asec"><div class="atitle">The Three Symbols</div><div style="text-align:center;font-size:40px;margin:10px 0">🌸 🗻 🪴</div><div class="atext">Sakura for fleeting beauty. Fuji for the pursuit of mastery. Bonsai for patience and craft.</div></div>
+    `:''}
+    </div>
+  `;
+}
+function setTab(t){tab=t;render();}
+function setPref(p){pref=p;render();}
+function setFilter(f){filter=f;render();}
+render();
 </script>
 </body>
 </html>
