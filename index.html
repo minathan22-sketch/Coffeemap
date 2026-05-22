@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brew Map</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f0a06;font-family:Georgia,serif;color:#f0e6d3;max-width:430px;margin:0 auto;min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes stampPop{0%{opacity:0;transform:translate(-50%,-50%) scale(0.5)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.stamp-anim{position:fixed;top:50%;left:50%;font-size:60px;z-index:100;animation:stampPop 0.8s ease forwards;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState} = React;
+
+const CAFES = [
+  {id:1,name:"TRUNK COFFEE",area:"名古屋",tags:["スペシャルティ","犬OK"],stamped:false,desc:"こだわりの焙煎と空間",rating:4.8},
+  {id:2,name:"% ARABICA",area:"京都",tags:["フォトジェニック","テイクアウト"],stamped:false,desc:"世界的に有名なロースタリー",rating:4.7},
+  {id:3,name:"FUGLEN TOKYO",area:"東京",tags:["北欧系","犬OK"],stamped:false,desc:"ノルウェー発の名店",rating:4.6},
+  {id:4,name:"BLUE BOTTLE",area:"東京",tags:["スペシャルティ","テイクアウト"],stamped:false,desc:"サードウェーブの代名詞",rating:4.5},
+  {id:5,name:"猿田彦珈琲",area:"東京",tags:["和モダン","スイーツ"],stamped:false,desc:"日本の感性が光るコーヒー",rating:4.6},
+  {id:6,name:"LIGHT UP COFFEE",area:"東京",tags:["スペシャルティ","浅煎り"],stamped:false,desc:"産地にこだわる浅煎り専門",rating:4.7},
+];
+
+const MILESTONES=[
+  {count:1,label:"はじめの一歩",icon:"☕"},
+  {count:3,label:"コーヒー好き",icon:"🫘"},
+  {count:5,label:"カフェ通",icon:"🏆"},
+  {count:6,label:"コーヒーマスター",icon:"👑"},
+];
+
+function App(){
+  const [cafes,setCafes]=useState(CAFES);
+  const [tab,setTab]=useState("list");
+  const [anim,setAnim]=useState(false);
+  const [filterTag,setFilterTag]=useState(null);
+
+  const stamped=cafes.filter(c=>c.stamped).length;
+  const milestone=[...MILESTONES].reverse().find(m=>stamped>=m.count);
+  const next=MILESTONES.find(m=>m.count>stamped);
+  const allTags=[...new Set(CAFES.flatMap(c=>c.tags))];
+  const filtered=filterTag?cafes.filter(c=>c.tags.includes(filterTag)):cafes;
+
+  function toggleStamp(id){
+    setCafes(p=>p.map(c=>c.id===id?{...c,stamped:!c.stamped}:c));
+    setAnim(true);setTimeout(()=>setAnim(false),800);
+  }
+
+  const S={
+    header:{padding:"28px 24px 16px",borderBottom:"1px solid #2a1f14"},
+    tabs:{display:"flex",borderBottom:"1px solid #1a1108"},
+    tab:(active)=>({flex:1,padding:"14px 0",background:"none",border:"none",
+      borderBottom:active?"2px solid #c9914a":"2px solid transparent",
+      color:active?"#c9914a":"#5a4a38",fontSize:13,letterSpacing:1}),
+    content:{padding:"16px 20px 80px"},
+    card:{background:"#120d07",border:"1px solid #1a1108",borderRadius:14,
+      padding:"14px 16px",display:"flex",alignItems:"center",gap:14,
+      marginBottom:10,animation:"fadeIn 0.3s ease"},
+    stampBtn:(s)=>({background:s?"#c9914a22":"transparent",
+      border:`1px solid ${s?"#c9914a":"#2a1f14"}`,borderRadius:99,
+      padding:"6px 12px",color:s?"#c9914a":"#3a2a18",fontSize:11,flexShrink:0}),
+    tag:{fontSize:9,padding:"2px 6px",borderRadius:99,
+      background:"#0f0a06",border:"1px solid #1a1108",color:"#5a4a38"},
+    filterBtn:(active)=>({padding:"5px 12px",borderRadius:99,fontSize:11,
+      border:`1px solid ${active?"#c9914a":"#2a1f14"}`,
+      background:active?"#2a1a08":"transparent",
+      color:active?"#c9914a":"#5a4a38",marginRight:6,marginBottom:6}),
+  };
+
+  return (
+    <div>
+      {anim&&<div className="stamp-anim">☕</div>}
+
+      <div style={S.header}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div>
+            <div style={{fontSize:11,letterSpacing:4,color:"#8b6a3e",marginBottom:4}}>Coffee Discovery</div>
+            <div style={{fontSize:26,fontWeight:700}}>Brew Map</div>
+          </div>
+          <div style={{background:"#1a1108",border:"1px solid #3a2a18",borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
+            <div style={{fontSize:20}}>{milestone?.icon||"☕"}</div>
+            <div style={{fontSize:11,color:"#8b6a3e",marginTop:2}}>{stamped} スタンプ</div>
+          </div>
+        </div>
+        {next&&(
+          <div style={{marginTop:14}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#5a4a38",marginBottom:6}}>
+              <span>{milestone?.label||"スタート"}</span>
+              <span>次: {next.label} まであと{next.count-stamped}つ</span>
+            </div>
+            <div style={{background:"#1a1108",borderRadius:99,height:4,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${(stamped/next.count)*100}%`,background:"linear-gradient(90deg,#8b6a3e,#c9914a)",borderRadius:99,transition:"width 0.5s"}}/>
+            </div>
+          </div>
+        )}
+        {stamped>=6&&<div style={{marginTop:12,textAlign:"center",fontSize:12,color:"#c9914a"}}>👑 全スタンプ制覇！コーヒーマスター</div>}
+      </div>
+
+      <div style={S.tabs}>
+        {[["list","リスト"],["stamps","スタンプ"]].map(([k,l])=>(
+          <button key={k} onClick={()=>setTab(k)} style={S.tab(tab===k)}>{l}</button>
+        ))}
+      </div>
+
+      <div style={S.content}>
+        {tab==="list"&&(
+          <div>
+            <div style={{display:"flex",flexWrap:"wrap",marginBottom:16}}>
+              <button onClick={()=>setFilterTag(null)} style={S.filterBtn(!filterTag)}>すべて</button>
+              {allTags.map(t=>(
+                <button key={t} onClick={()=>setFilterTag(t===filterTag?null:t)} style={S.filterBtn(filterTag===t)}>{t}</button>
+              ))}
+            </div>
+            {filtered.map(cafe=>(
+              <div key={cafe.id} style={S.card}>
+                <div style={{width:44,height:44,borderRadius:12,background:cafe.stamped?"#1a1108":"#0c0804",
+                  border:`1px solid ${cafe.stamped?"#c9914a44":"#1a1108"}`,
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>
+                  {cafe.stamped?"☕":"○"}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:14,fontWeight:700,marginBottom:2}}>{cafe.name}</div>
+                  <div style={{fontSize:11,color:"#5a4a38"}}>{cafe.area} · ★{cafe.rating}</div>
+                  <div style={{display:"flex",gap:4,marginTop:4,flexWrap:"wrap"}}>
+                    {cafe.tags.map(t=><span key={t} style={S.tag}>{t}</span>)}
+                  </div>
+                </div>
+                <button onClick={()=>toggleStamp(cafe.id)} style={S.stampBtn(cafe.stamped)}>
+                  {cafe.stamped?"✓":"＋"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab==="stamps"&&(
+          <div>
+            <div style={{fontSize:12,color:"#5a4a38",marginBottom:12,letterSpacing:1}}>MILESTONES</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
+              {MILESTONES.map(m=>{
+                const ok=stamped>=m.count;
+                return(
+                  <div key={m.count} style={{background:ok?"#1a1108":"#0c0804",border:`1px solid ${ok?"#3a2a18":"#1a1108"}`,
+                    borderRadius:14,padding:"16px 12px",textAlign:"center",opacity:ok?1:0.4}}>
+                    <div style={{fontSize:28,marginBottom:6,filter:ok?"none":"grayscale(1)"}}>{m.icon}</div>
+                    <div style={{fontSize:12,color:ok?"#c9914a":"#3a2a18",fontWeight:700}}>{m.label}</div>
+                    <div style={{fontSize:10,color:"#3a2a18",marginTop:3}}>{m.count}店舗</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{fontSize:12,color:"#5a4a38",marginBottom:12,letterSpacing:1}}>STAMP CARD</div>
+            <div style={{background:"#120d07",border:"1px solid #2a1f14",borderRadius:16,padding:16}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+                {cafes.map(cafe=>(
+                  <div key={cafe.id} style={{aspectRatio:"1",background:cafe.stamped?"#1a1108":"#0c0804",
+                    border:`1px solid ${cafe.stamped?"#c9914a44":"#1a1108"}`,borderRadius:12,
+                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:8}}>
+                    <div style={{fontSize:22,filter:cafe.stamped?"none":"grayscale(1) opacity(0.3)"}}>{cafe.stamped?"☕":"○"}</div>
+                    <div style={{fontSize:9,color:cafe.stamped?"#8b6a3e":"#2a1f14",marginTop:4,textAlign:"center",lineHeight:1.2}}>
+                      {cafe.name.split(" ")[0]}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
